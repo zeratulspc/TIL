@@ -211,13 +211,12 @@ int lsh_launch(char **args)
   int status;
 
   pid = fork(); //현재 부모 프로세스를 복제(Git의 fork와 비슷함)
-	///
   if (pid == 0) {
     // 복제된 자식 프로세스
     if (execvp(args[0], args) == -1) {
       perror("lsh");
     }
-    exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE); // execvp로 실행한 프로그램이 종료되면, 자식 프로세스를 종료한다.
   } else if (pid < 0) {
     // fork 중 에러 생김
     perror("lsh");
@@ -231,6 +230,14 @@ int lsh_launch(char **args)
   return 1;
 }
 ```
+
+쉘이 명령을 실행하는 과정은 다음과 같다
+
+1. 부모 프로세스(현재 프로세스)를 복제한다, 이때 복제된 프로세스를 자식 프로세스라 부른다
+2. 유저의 입력값을 파싱해서 얻어낸 프로그램 이름을 환경변수에서 찾는다 (PATH)
+3. 유저가 입력한 프로그램이 환경 변수에 존재하면, 이 프로그램을 자식 프로세스에서 실행한다
+4. 이때 부모 프로세스는 자식 프로세스가 종료될때까지 대기한다
+5. 자식 프로세스가 종료되면 부모 프로세스는 계속 진행한다
 
 ---
 
